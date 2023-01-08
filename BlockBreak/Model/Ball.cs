@@ -13,6 +13,8 @@ public sealed class Ball
 
     public double SpeedX { get; set; }
     public double SpeedY { get; set; }
+
+    public double Speed { get; set; } = 1;
 }
 
 public enum BallState

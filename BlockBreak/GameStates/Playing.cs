@@ -57,6 +57,7 @@ public sealed class Playing: GameState
     {
         Ball.X = Paddle.X + Paddle.Width / 2.0;
         Ball.Y = Paddle.Y - Ball.Radius;
+        Ball.Speed = 1;
 
         Ball.State = BallState.StuckToPaddle;
     }
@@ -75,8 +76,8 @@ public sealed class Playing: GameState
         {
             Ball.State = BallState.Moving;
 
-            Ball.SpeedX = RNG.NextBool() ? -0.4 : 0.4;
-            Ball.SpeedY = -0.9;
+            Ball.SpeedX = 0;
+            Ball.SpeedY = -Ball.Speed;
         }
     }
 
@@ -86,7 +87,6 @@ public sealed class Playing: GameState
         if (gameTime.ElapsedGameTime.TotalSeconds >= 0.1)
             return;
 
-        StarField.Update(gameTime);
         MovePaddle(gameTime);
         MoveBall(gameTime);
     }
@@ -110,6 +110,80 @@ public sealed class Playing: GameState
         if (Ball.State != BallState.Moving)
             return;
 
+        var newY = Ball.Y + Ball.SpeedY * gameTime.ElapsedGameTime.TotalSeconds * 200;
+
+        if (Ball.PixelY != (int) newY)
+        {
+            // if it hit the top of the screen, bounce
+            if ((int) newY < Ball.Radius)
+            {
+                Ball.SpeedY *= -1;
+                newY += Ball.Radius - newY;
+            }
+
+            // if it went past the bottom of the screen, lose a life
+            else if ((int) newY >= Graphics.Height + Ball.Radius)
+            {
+                if (Lives > 0)
+                {
+                    ResetBall();
+                    Lives--;
+                    return;
+                }
+                else
+                    GSM.ChangeState<GameOver, GameOverConfig>(new(this, Score));
+            }
+
+            // if it hit the paddle, bounce
+            else if (Ball.Y + Ball.Radius < Paddle.Y && newY + Ball.Radius >= Paddle.Y)
+            {
+                if (Ball.X + Ball.Radius >= Paddle.X && Ball.X - Ball.Radius < Paddle.X + Paddle.Width)
+                {
+                    Ball.SpeedY *= -1;
+                    newY -= newY - (Paddle.PixelY - Ball.Radius);
+                    Ball.SpeedX = (Ball.X - (Paddle.X + Paddle.Width / 2.0)) / 10.0;
+                    Ball.Speed += 0.05;
+
+                    NormalizeBallSpeed();
+                }
+            }
+
+            for(int x = 0; x < BlockColumns; x++)
+            {
+                for (int y = 0; y < BlockRows; y++)
+                {
+                    var block = Blocks[x, y];
+
+                    if (block == null)
+                        continue;
+
+                    var (blockX, blockY) = BlockCoordinates(x, y);
+
+                    if (Ball.X + Ball.Radius >= blockX && Ball.X - Ball.Radius < blockX + Block.Width)
+                    {
+                        // hit from above
+                        if(Ball.Y + Ball.Radius < blockY && newY + Ball.Radius >= blockY)
+                        {
+                            Ball.SpeedY *= -1;
+                            newY -= newY - (blockY - Ball.Radius);
+                            Score += block.Points;
+                            Blocks[x, y] = null;
+                        }
+                        // hit from below
+                        else if(Ball.Y - Ball.Radius > blockY + Block.Height && newY - Ball.Radius <= blockY + Block.Height)
+                        {
+                            Ball.SpeedY *= -1;
+                            newY += blockY + Block.Height + Ball.Radius - newY;
+                            Score += block.Points;
+                            Blocks[x, y] = null;
+                        }
+                    }
+                }
+            }
+        }
+
+        Ball.Y = newY;
+
         var newX = Ball.X + Ball.SpeedX * gameTime.ElapsedGameTime.TotalSeconds * 200;
 
         if (Ball.PixelX != (int) newX)
@@ -122,48 +196,44 @@ public sealed class Playing: GameState
             }
 
             // if hit the right side of the screen, bounce
-            if ((int) newX > Graphics.Width - Ball.Radius - 1)
+            else if ((int) newX > Graphics.Width - Ball.Radius - 1)
             {
                 Ball.SpeedX *= -1;
                 newX -= newX - (Graphics.Width - Ball.Radius - 1);
             }
 
-            // if hit the left side of a block, clear the block, then bounce
-
+            // if it hit the paddle, bounce
+            else if (Ball.Y + Ball.Radius >= Paddle.Y && Ball.Y - Ball.Radius < Paddle.Y + Paddle.Height)
+            {
+                // hit on the left
+                if (Ball.X + Ball.Radius < Paddle.X && newX + Ball.Radius >= Paddle.X)
+                {
+                    Ball.SpeedX *= -1;
+                    newX -= newX - (Paddle.X - Ball.Radius);
+                }
+                // hit on the right
+                else if(Ball.X - Ball.Radius >= Paddle.X + Paddle.Width && newX - Ball.Radius < Paddle.X + Paddle.Width)
+                {
+                    Ball.SpeedX *= -1;
+                    newX += Paddle.X + Paddle.Width + Ball.Radius - newX;
+                }
+            }
         }
 
         Ball.X = newX;
+    }
 
-        var newY = Ball.Y + Ball.SpeedY * gameTime.ElapsedGameTime.TotalSeconds * 200;
+    private void NormalizeBallSpeed()
+    {
+        var speed = Math.Sqrt(Ball.SpeedX * Ball.SpeedX + Ball.SpeedY * Ball.SpeedY);
 
-        if (Ball.PixelY != (int) newY)
-        {
-            // if it hit the top of the screen, bounce
-            if ((int) newY < Ball.Radius)
-            {
-                Ball.SpeedY *= -1;
-                newY += Ball.Radius - newY;
-            }
-
-            // if it went past the bottom of the screen, reset
-            if ((int) newY >= Graphics.Height + Ball.Radius)
-            {
-                if (Lives > 0)
-                {
-                    ResetBall();
-                    Lives--;
-                    return;
-                }
-                else
-                    GSM.ChangeState<GameOver, GameOverConfig>(new(this, Score));
-            }
-        }
-
-        Ball.Y = newY;
+        Ball.SpeedX = Ball.SpeedX / speed * Ball.Speed;
+        Ball.SpeedY = Ball.SpeedY / speed * Ball.Speed;
     }
 
     public override void AlwaysUpdate(GameTime gameTime)
     {
+        StarField.Update(gameTime);
     }
 
     public override void ActiveDraw(GameTime gameTime)
@@ -190,15 +260,11 @@ public sealed class Playing: GameState
         Graphics.DrawText("Font", 2, Graphics.Height - 10, $"Score: {Score}", DawnBringers16.White);
 
         for (int i = 1; i <= Lives; i++)
-        {
             Graphics.DrawPicture("Life", Graphics.Width - 10 * i, Graphics.Height - 10);
-        }
     }
 
-    private (int, int) BlockCoordinates(int column, int row)
-    {
-        return (column * Block.Width, row * Block.Height + BlockYOffset);
-    }
+    private static (int, int) BlockCoordinates(int column, int row)
+        => (column * Block.Width, row * Block.Height + BlockYOffset);
 
     private void DrawBlocks()
     {
