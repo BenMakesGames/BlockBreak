@@ -3,6 +3,7 @@ using BenMakesGames.PlayPlayMini;
 using BenMakesGames.PlayPlayMini.GraphicsExtensions;
 using BenMakesGames.PlayPlayMini.Services;
 using Microsoft.Xna.Framework;
+using Microsoft.Xna.Framework.Input;
 
 namespace BlockBreak.GameStates;
 
@@ -27,7 +28,7 @@ public sealed class GameOver: GameState
 
     public override void ActiveInput(GameTime gameTime)
     {
-        if (Keyboard.PressedAnyKey())
+        if (Keyboard.PressedKey(Keys.Space))
         {
             // TODO: if you got a high score, go to the high score screen; else, go to "sorry, no high score" screen
             GSM.ChangeState<TitleMenu>();
@@ -53,7 +54,7 @@ public sealed class GameOver: GameState
 
         Graphics.DrawPicture("GameOver", (Graphics.Width - Graphics.Pictures["GameOver"].Width) / 2, Graphics.Height / 3 - Graphics.Pictures["GameOver"].Height);
 
-        var text = "Press any key to continue...";
+        var text = "Press SPACE to continue...";
 
         Graphics.DrawWavyText("Font", gameTime, text, DawnBringers16.White);
     }

@@ -1,5 +1,6 @@
 using BenMakesGames.MonoGame.Palettes;
 using BenMakesGames.PlayPlayMini;
+using BenMakesGames.PlayPlayMini.GraphicsExtensions;
 using BenMakesGames.PlayPlayMini.Services;
 using BenMakesGames.RandomHelpers;
 using BlockBreak.Model;
@@ -57,7 +58,7 @@ public sealed class Playing: GameState
     {
         Ball.X = Paddle.X + Paddle.Width / 2.0;
         Ball.Y = Paddle.Y - Ball.Radius;
-        Ball.Speed = 1;
+        Ball.Speed = Ball.InitialSpeed;
 
         Ball.State = BallState.StuckToPaddle;
     }
@@ -76,8 +77,10 @@ public sealed class Playing: GameState
         {
             Ball.State = BallState.Moving;
 
-            Ball.SpeedX = 0;
+            Ball.SpeedX = (RNG.NextDouble() - 0.5) / 10;
             Ball.SpeedY = -Ball.Speed;
+            
+            NormalizeBallSpeed();
         }
     }
 
@@ -110,6 +113,7 @@ public sealed class Playing: GameState
         if (Ball.State != BallState.Moving)
             return;
 
+        // up/down movement
         var newY = Ball.Y + Ball.SpeedY * gameTime.ElapsedGameTime.TotalSeconds * 200;
 
         if (Ball.PixelY != (int) newY)
@@ -148,42 +152,49 @@ public sealed class Playing: GameState
                 }
             }
 
-            for(int x = 0; x < BlockColumns; x++)
-            {
-                for (int y = 0; y < BlockRows; y++)
-                {
-                    var block = Blocks[x, y];
+            bool movingUp = newY < Ball.Y;
 
-                    if (block == null)
+            var oldRow = ((int)Ball.Y + (movingUp ? -Ball.Radius : Ball.Radius) - BlockYOffset) / Block.Height;
+            var newRow = ((int)newY + (movingUp ? -Ball.Radius : Ball.Radius) - BlockYOffset) / Block.Height;
+
+            if(newRow != oldRow && newRow is >= 0 and < BlockRows)
+            {
+                var hitAnything = false;
+                var (_, blockY) = BlockCoordinates(0, newRow);
+                
+                for(int x = 0; x < BlockColumns; x++)
+                {
+                    var block = Blocks[x, newRow];
+
+                    if(block == null)
                         continue;
 
-                    var (blockX, blockY) = BlockCoordinates(x, y);
+                    var (blockX, _) = BlockCoordinates(x, newRow);
 
-                    if (Ball.X + Ball.Radius >= blockX && Ball.X - Ball.Radius < blockX + Block.Width)
+                    if(Ball.X + Ball.Radius >= blockX && Ball.X - Ball.Radius < blockX + Block.Width)
                     {
-                        // hit from above
-                        if(Ball.Y + Ball.Radius < blockY && newY + Ball.Radius >= blockY)
-                        {
-                            Ball.SpeedY *= -1;
-                            newY -= newY - (blockY - Ball.Radius);
-                            Score += block.Points;
-                            Blocks[x, y] = null;
-                        }
-                        // hit from below
-                        else if(Ball.Y - Ball.Radius > blockY + Block.Height && newY - Ball.Radius <= blockY + Block.Height)
-                        {
-                            Ball.SpeedY *= -1;
-                            newY += blockY + Block.Height + Ball.Radius - newY;
-                            Score += block.Points;
-                            Blocks[x, y] = null;
-                        }
+                        hitAnything = true;
+
+                        Score += block.Points;
+                        Blocks[x, newRow] = null;
                     }
+                }
+
+                if(hitAnything)
+                {
+                    Ball.SpeedY *= -1;
+                    
+                    if(movingUp)
+                        newY += blockY + Block.Height - (newY - Ball.Radius);
+                    else
+                        newY -= newY + Ball.Radius - blockY;
                 }
             }
         }
 
         Ball.Y = newY;
 
+        // left/right movement
         var newX = Ball.X + Ball.SpeedX * gameTime.ElapsedGameTime.TotalSeconds * 200;
 
         if (Ball.PixelX != (int) newX)
@@ -215,7 +226,46 @@ public sealed class Playing: GameState
                 else if(Ball.X - Ball.Radius >= Paddle.X + Paddle.Width && newX - Ball.Radius < Paddle.X + Paddle.Width)
                 {
                     Ball.SpeedX *= -1;
-                    newX += Paddle.X + Paddle.Width + Ball.Radius - newX;
+                    newX += Paddle.X + Paddle.Width - (newX - Ball.Radius);
+                }
+            }
+            
+            bool movingLeft = newX < Ball.X;
+
+            var oldColumn = ((int)Ball.X + (movingLeft ? -Ball.Radius : Ball.Radius)) / Block.Width;
+            var newColumn = ((int)newX + (movingLeft ? -Ball.Radius : Ball.Radius)) / Block.Width;
+
+            if(newColumn != oldColumn && newColumn is >= 0 and < BlockColumns)
+            {
+                var hitAnything = false;
+                var (blockX, _) = BlockCoordinates(newColumn, 0);
+                
+                for(int y = 0; y < BlockRows; y++)
+                {
+                    var block = Blocks[newColumn, y];
+
+                    if(block == null)
+                        continue;
+
+                    var (_, blockY) = BlockCoordinates(newColumn, y);
+
+                    if(Ball.Y + Ball.Radius >= blockY && Ball.Y - Ball.Radius < blockY + Block.Height)
+                    {
+                        hitAnything = true;
+
+                        Score += block.Points;
+                        Blocks[newColumn, y] = null;
+                    }
+                }
+
+                if(hitAnything)
+                {
+                    Ball.SpeedX *= -1;
+                    
+                    if(movingLeft)
+                        newX += blockX + Block.Width - (newX - Ball.Radius);
+                    else
+                        newX -= newX + Ball.Radius - blockX;
                 }
             }
         }
@@ -238,6 +288,10 @@ public sealed class Playing: GameState
 
     public override void ActiveDraw(GameTime gameTime)
     {
+        if(Ball.State == BallState.StuckToPaddle)
+        {
+            Graphics.DrawWavyText("Font", gameTime, "Press SPACE to launch...", DawnBringers16.White);
+        }
     }
 
     public override void AlwaysDraw(GameTime gameTime)
