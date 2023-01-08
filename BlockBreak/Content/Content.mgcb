@@ -85,3 +85,9 @@
 /processorParam:TextureFormat=Color
 /build:Graphics/Paddle.png
 
+#begin Sounds/Bounce.wav
+/importer:WavImporter
+/processor:SoundEffectProcessor
+/processorParam:Quality=Best
+/build:Sounds/Bounce.wav
+

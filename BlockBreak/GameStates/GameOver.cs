@@ -54,9 +54,7 @@ public sealed class GameOver: GameState
 
         Graphics.DrawPicture("GameOver", (Graphics.Width - Graphics.Pictures["GameOver"].Width) / 2, Graphics.Height / 3 - Graphics.Pictures["GameOver"].Height);
 
-        var text = "Press SPACE to continue...";
-
-        Graphics.DrawWavyText("Font", gameTime, text, DawnBringers16.White);
+        Graphics.DrawWavyText("Font", gameTime, "Press SPACE to continue...", DawnBringers16.LightGray);
     }
 }
 

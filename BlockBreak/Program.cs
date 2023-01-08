@@ -13,21 +13,22 @@ gsmBuilder
     .SetWindowSize(1920 / 5, 1080 / 5, 3)
     .SetInitialGameState<Startup>()
 
-    // TODO: set a better window title
     .SetWindowTitle("Block-Break")
 
-    // TODO: add any resources needed (refer to PlayPlayMini documentation for more info)
     .AddAssets(new IAsset[]
     {
+        new FontMeta("Font", "Fonts/Font", 6, 8, true),
+
         new SpriteSheetMeta("Blocks", "Graphics/Blocks", 24, 8),
+
         new PictureMeta("Ball", "Graphics/Ball", true),
         new PictureMeta("Life", "Graphics/Life"),
         new PictureMeta("Paddle", "Graphics/Paddle"),
-        new FontMeta("Font", "Fonts/Font", 6, 8, true),
-        new PictureMeta("GameOver", "Graphics/GameOver")
+        new PictureMeta("GameOver", "Graphics/GameOver"),
+        
+        new SoundEffectMeta("Bounce", "Sounds/Bounce"),
     })
 
-    // TODO: any additional service registration (refer to PlayPlayMini and/or Autofac documentation for more info)
     .AddServices(s => {
         var serilogConfig = new LoggerConfiguration()
 #if DEBUG

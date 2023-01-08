@@ -17,11 +17,14 @@ public sealed class Playing: GameState
     private const int BlockYOffset = 40;
     private const int PaddleYOffset = 20;
 
+    public int GameSpeed = 200;
+
     private GraphicsManager Graphics { get; }
     private KeyboardManager Keyboard { get; }
     private GameStateManager GSM { get; }
     private Random RNG { get; }
     private StarField StarField { get; }
+    private SoundManager Sounds { get; }
 
     private int Lives { get; set; } = 3;
     private int Score { get; set; }
@@ -29,13 +32,14 @@ public sealed class Playing: GameState
     private Paddle Paddle { get; } = new();
     private Block?[,] Blocks { get; } = new Block[BlockColumns, BlockRows];
 
-    public Playing(GraphicsManager graphics, GameStateManager gsm, KeyboardManager keyboard, Random rng, StarField starField)
+    public Playing(GraphicsManager graphics, GameStateManager gsm, KeyboardManager keyboard, Random rng, StarField starField, SoundManager sounds)
     {
         Graphics = graphics;
         GSM = gsm;
         Keyboard = keyboard;
         RNG = rng;
         StarField = starField;
+        Sounds = sounds;
 
         ResetBoard();
     }
@@ -99,7 +103,7 @@ public sealed class Playing: GameState
         var oldX = Paddle.X;
 
         Paddle.X = Math.Clamp(
-            Paddle.X + Paddle.SpeedX * gameTime.ElapsedGameTime.TotalSeconds * 200,
+            Paddle.X + Paddle.SpeedX * gameTime.ElapsedGameTime.TotalSeconds * GameSpeed,
             0,
             Graphics.Width - Paddle.Width
         );
@@ -114,7 +118,7 @@ public sealed class Playing: GameState
             return;
 
         // up/down movement
-        var newY = Ball.Y + Ball.SpeedY * gameTime.ElapsedGameTime.TotalSeconds * 200;
+        var newY = Ball.Y + Ball.SpeedY * gameTime.ElapsedGameTime.TotalSeconds * GameSpeed;
 
         if (Ball.PixelY != (int) newY)
         {
@@ -123,6 +127,7 @@ public sealed class Playing: GameState
             {
                 Ball.SpeedY *= -1;
                 newY += Ball.Radius - newY;
+                PlayBounce(0);
             }
 
             // if it went past the bottom of the screen, lose a life
@@ -149,6 +154,8 @@ public sealed class Playing: GameState
                     Ball.Speed += 0.05;
 
                     NormalizeBallSpeed();
+                    
+                    PlayBounce(-0.2f);
                 }
             }
 
@@ -188,6 +195,8 @@ public sealed class Playing: GameState
                         newY += blockY + Block.Height - (newY - Ball.Radius);
                     else
                         newY -= newY + Ball.Radius - blockY;
+
+                    PlayBounce(newRow * 0.2f);
                 }
             }
         }
@@ -195,7 +204,7 @@ public sealed class Playing: GameState
         Ball.Y = newY;
 
         // left/right movement
-        var newX = Ball.X + Ball.SpeedX * gameTime.ElapsedGameTime.TotalSeconds * 200;
+        var newX = Ball.X + Ball.SpeedX * gameTime.ElapsedGameTime.TotalSeconds * GameSpeed;
 
         if (Ball.PixelX != (int) newX)
         {
@@ -204,6 +213,7 @@ public sealed class Playing: GameState
             {
                 Ball.SpeedX *= -1;
                 newX += Ball.Radius - newX;
+                PlayBounce(0);
             }
 
             // if hit the right side of the screen, bounce
@@ -211,6 +221,7 @@ public sealed class Playing: GameState
             {
                 Ball.SpeedX *= -1;
                 newX -= newX - (Graphics.Width - Ball.Radius - 1);
+                PlayBounce(0);
             }
 
             // if it hit the paddle, bounce
@@ -219,14 +230,16 @@ public sealed class Playing: GameState
                 // hit on the left
                 if (Ball.X + Ball.Radius < Paddle.X && newX + Ball.Radius >= Paddle.X)
                 {
-                    Ball.SpeedX *= -1;
+                    Ball.SpeedX = -Math.Abs(Ball.SpeedX);
                     newX -= newX - (Paddle.X - Ball.Radius);
+                    PlayBounce(-0.2f);
                 }
                 // hit on the right
                 else if(Ball.X - Ball.Radius >= Paddle.X + Paddle.Width && newX - Ball.Radius < Paddle.X + Paddle.Width)
                 {
-                    Ball.SpeedX *= -1;
+                    Ball.SpeedX = Math.Abs(Ball.SpeedX);
                     newX += Paddle.X + Paddle.Width - (newX - Ball.Radius);
+                    PlayBounce(-0.2f);
                 }
             }
             
@@ -239,6 +252,7 @@ public sealed class Playing: GameState
             {
                 var hitAnything = false;
                 var (blockX, _) = BlockCoordinates(newColumn, 0);
+                var highestRow = 0;
                 
                 for(int y = 0; y < BlockRows; y++)
                 {
@@ -252,6 +266,7 @@ public sealed class Playing: GameState
                     if(Ball.Y + Ball.Radius >= blockY && Ball.Y - Ball.Radius < blockY + Block.Height)
                     {
                         hitAnything = true;
+                        highestRow = Math.Max(highestRow, y);
 
                         Score += block.Points;
                         Blocks[newColumn, y] = null;
@@ -266,6 +281,8 @@ public sealed class Playing: GameState
                         newX += blockX + Block.Width - (newX - Ball.Radius);
                     else
                         newX -= newX + Ball.Radius - blockX;
+                    
+                    PlayBounce(0.2f * highestRow);
                 }
             }
         }
@@ -289,9 +306,7 @@ public sealed class Playing: GameState
     public override void ActiveDraw(GameTime gameTime)
     {
         if(Ball.State == BallState.StuckToPaddle)
-        {
-            Graphics.DrawWavyText("Font", gameTime, "Press SPACE to launch...", DawnBringers16.White);
-        }
+            Graphics.DrawWavyText("Font", gameTime, "Press SPACE to launch...", DawnBringers16.LightGray);
     }
 
     public override void AlwaysDraw(GameTime gameTime)
@@ -343,5 +358,10 @@ public sealed class Playing: GameState
     private void DrawBall()
     {
         Graphics.DrawPicture("Ball", Ball.PixelX - Ball.Radius, Ball.PixelY - Ball.Radius);
+    }
+
+    public void PlayBounce(float pitch)
+    {
+        Sounds.PlaySound("Bounce", pitch: pitch);        
     }
 }
