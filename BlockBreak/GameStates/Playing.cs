@@ -77,7 +77,7 @@ public sealed class Playing: GameState
         if (Keyboard.AnyKeyDown(new[] { Keys.D, Keys.Right, Keys.NumPad6 }))
             Paddle.SpeedX++;
 
-        if (Keyboard.KeyDown(Keys.Space) && Ball.State == BallState.StuckToPaddle)
+        if (Keyboard.PressedKey(Keys.Space) && Ball.State == BallState.StuckToPaddle)
         {
             Ball.State = BallState.Moving;
 

@@ -52,7 +52,12 @@ public sealed class GameOver: GameState
     {
         PreviousState.AlwaysDraw(gameTime);
 
-        Graphics.DrawPicture("GameOver", (Graphics.Width - Graphics.Pictures["GameOver"].Width) / 2, Graphics.Height / 3 - Graphics.Pictures["GameOver"].Height);
+        Graphics.DrawSprite(
+            "BigWords",
+            (Graphics.Width - Graphics.SpriteSheets["BigWords"].SpriteWidth) / 2,
+            Graphics.Height / 3 - Graphics.SpriteSheets["BigWords"].SpriteHeight,
+            1
+        );
 
         Graphics.DrawWavyText("Font", gameTime, "Press SPACE to continue...", DawnBringers16.LightGray);
     }

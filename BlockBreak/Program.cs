@@ -20,11 +20,12 @@ gsmBuilder
         new FontMeta("Font", "Fonts/Font", 6, 8, true),
 
         new SpriteSheetMeta("Blocks", "Graphics/Blocks", 24, 8),
+        new SpriteSheetMeta("BigWords", "Graphics/BigWords", 201, 27),
 
         new PictureMeta("Ball", "Graphics/Ball", true),
         new PictureMeta("Life", "Graphics/Life"),
         new PictureMeta("Paddle", "Graphics/Paddle"),
-        new PictureMeta("GameOver", "Graphics/GameOver"),
+        new PictureMeta("MenuCursor", "Graphics/MenuCursor"),
         
         new SoundEffectMeta("Bounce", "Sounds/Bounce"),
     })
