@@ -30,7 +30,7 @@ public sealed class HighScoreTable: GameState
         Db = db;
         StarField = starField;
 
-        Top10 = Db.HighScoreEntries.ToList();
+        Top10 = Db.HighScoreEntries.OrderByDescending(h => h.Score).ToList();
     }
 
     public override void ActiveInput(GameTime gameTime)
@@ -74,9 +74,9 @@ public sealed class HighScoreTable: GameState
                 _ => DawnBringers16.DarkGray
             };
             
-            Graphics.DrawText("Font", HighScoresX, HighScoresY + (i * HighScoreLineHeight), $"{i + 1}".PadLeft(2, ' '), color);
+            Graphics.DrawText("Font", HighScoresX, HighScoresY + (i * HighScoreLineHeight), $"{i + 1,2}", color);
             Graphics.DrawText("Font", HighScoresX + 20, HighScoresY + (i * HighScoreLineHeight), Top10[i].Name, color);
-            Graphics.DrawText("Font", HighScoresX + 90, HighScoresY + (i * HighScoreLineHeight), $"{Top10[i].Score:0,000}".PadLeft(9, ' '), color);
+            Graphics.DrawText("Font", HighScoresX + 90, HighScoresY + (i * HighScoreLineHeight), $"{Top10[i].Score,9:N0}", color);
         }
         
         Graphics.DrawWavyText("Font", Graphics.Height - 20, gameTime, "Press any key to return to the main menu", DawnBringers16.White);

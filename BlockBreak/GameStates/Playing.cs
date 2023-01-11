@@ -16,6 +16,7 @@ public sealed class Playing: GameState
     private const int BlockRows = 6;
     private const int BlockYOffset = 40;
     private const int PaddleYOffset = 20;
+    private const double BallSpeedIncreasePerPaddleBounce = 0.02;
 
     public int GameSpeed = 200;
 
@@ -151,7 +152,7 @@ public sealed class Playing: GameState
                     Ball.SpeedY *= -1;
                     newY -= newY - (Paddle.PixelY - Ball.Radius);
                     Ball.SpeedX = (Ball.X - (Paddle.X + Paddle.Width / 2.0)) / 10.0;
-                    Ball.Speed += 0.05;
+                    Ball.Speed += BallSpeedIncreasePerPaddleBounce;
 
                     NormalizeBallSpeed();
                     

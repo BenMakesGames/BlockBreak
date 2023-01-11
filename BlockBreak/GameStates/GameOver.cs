@@ -2,6 +2,8 @@ using BenMakesGames.MonoGame.Palettes;
 using BenMakesGames.PlayPlayMini;
 using BenMakesGames.PlayPlayMini.GraphicsExtensions;
 using BenMakesGames.PlayPlayMini.Services;
+using BlockBreak.Model.DbEntities;
+using BlockBreak.Services;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Input;
 
@@ -12,40 +14,88 @@ public sealed class GameOver: GameState
     private GraphicsManager Graphics { get; }
     private KeyboardManager Keyboard { get; }
     private GameStateManager GSM { get; }
+    private Db Db { get; }
 
     private GameState PreviousState { get; }
     private int Score { get; }
+    private int NumberOfHigherScores { get; }
+    private bool GotAHighScore => NumberOfHigherScores < 10;
 
-    public GameOver(GameOverConfig config, GraphicsManager graphics, GameStateManager gsm, KeyboardManager keyboard)
+    private string Initials { get; set; } = "";
+
+    public GameOver(GameOverConfig config, GraphicsManager graphics, GameStateManager gsm, KeyboardManager keyboard, Db db)
     {
         Graphics = graphics;
         GSM = gsm;
         Keyboard = keyboard;
+        Db = db;
 
         PreviousState = config.PreviousState;
         Score = config.Score;
+
+        NumberOfHigherScores = Db.HighScoreEntries.Count(h => h.Score >= Score);
     }
 
     public override void ActiveInput(GameTime gameTime)
     {
-        if (Keyboard.PressedKey(Keys.Space))
+        if (GotAHighScore)
         {
-            // TODO: if you got a high score, go to the high score screen; else, go to "sorry, no high score" screen
-            GSM.ChangeState<TitleMenu>();
+            DoNameInput();
+        }
+        else if (Keyboard.PressedAnyKey(new[] { Keys.Space, Keys.Enter }))
+        {
+            GSM.ChangeState<HighScoreTable>();
         }
     }
 
-    public override void ActiveUpdate(GameTime gameTime)
+    private void DoNameInput()
     {
+        if (Initials.Length == 3)
+        {
+            if (Keyboard.PressedKey(Keys.Enter))
+            {
+                var entryCount = Db.HighScoreEntries.Count();
+
+                // we're about to add an entry; if there's more than 9 entries, then we need to delete the lowest one
+                if(entryCount > 9)
+                {
+                    // if we've done everything right in the past, there should only be ONE entry to delete...
+                    // ... but maybe we haven't done everything right in the past :P
+                    var lowestScores = Db.HighScoreEntries.OrderByDescending(h => h.Score).Take(entryCount - 9);
+                    Db.HighScoreEntries.RemoveRange(lowestScores);
+                }
+
+                Db.HighScoreEntries.Add(new HighScoreEntry
+                {
+                    Name = Initials,
+                    Score = Score
+                });
+
+                Db.SaveChanges();
+
+                GSM.ChangeState<HighScoreTable>();
+            }
+        }
+
+        if (Initials.Length < 3)
+        {
+            for (char c = 'A'; c <= 'Z'; c++)
+            {
+                if(Keyboard.PressedKey(c - 'A' + Keys.A))
+                    Initials += c;
+            }
+        }
+
+        if (Initials.Length > 0)
+        {
+            if (Keyboard.PressedKey(Keys.Back))
+                Initials = Initials[..^1];
+        }
     }
 
     public override void AlwaysUpdate(GameTime gameTime)
     {
         PreviousState.AlwaysUpdate(gameTime);
-    }
-
-    public override void ActiveDraw(GameTime gameTime)
-    {
     }
 
     public override void AlwaysDraw(GameTime gameTime)
@@ -59,7 +109,52 @@ public sealed class GameOver: GameState
             1
         );
 
-        Graphics.DrawWavyText("Font", gameTime, "Press SPACE to continue...", DawnBringers16.LightGray);
+        var score = $"Score: {Score:N0}";
+        Graphics.DrawText("Font", Graphics.Width / 2 - score.Length * 3, Graphics.Height / 2 - 20, score, DawnBringers16.White);
+
+        if (GotAHighScore)
+        {
+            var text = "Congratulations! You got a high score!";
+            Graphics.DrawText("Font", Graphics.Width / 2 - text.Length * 3, Graphics.Height / 2 - 10, text, DawnBringers16.White);
+
+            DrawNameInput(gameTime);
+        }
+        else
+        {
+            var text = "Not enough for a high score; sorry!";
+            Graphics.DrawText("Font", Graphics.Width / 2 - text.Length * 3, Graphics.Height / 2 - 10, text, DawnBringers16.White);
+
+            Graphics.DrawWavyText("Font", Graphics.Height / 2 + 10, gameTime, "Press SPACE to continue...", DawnBringers16.LightGray);
+        }
+    }
+
+    private void DrawNameInput(GameTime gameTime)
+    {
+        var x = Graphics.Width / 2 - 15;
+        var y = Graphics.Height / 2 + 10;
+
+        for (int i = 0; i < 3; i++)
+        {
+            if (i < Initials.Length)
+            {
+                var color = ((int)(gameTime.TotalGameTime.TotalSeconds * 10 + i) % 4) switch
+                {
+                    0 => DawnBringers16.White,
+                    1 => DawnBringers16.Orange,
+                    2 => DawnBringers16.White,
+                    3 => DawnBringers16.Yellow,
+                };
+
+                Graphics.DrawText("Font", x + i * 12, y, Initials[i], color);
+            }
+            else if (i == Initials.Length)
+            {
+                if((int)(gameTime.TotalGameTime.TotalSeconds * 4) % 2 == 0)
+                    Graphics.DrawFilledRectangle(x + i * 12, y, 6, 8, DawnBringers16.White);
+            }
+
+            Graphics.DrawText("Font", x + i * 12, y + 2, "_", DawnBringers16.LightGray);
+        }
     }
 }
 
