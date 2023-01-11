@@ -25,6 +25,12 @@ public sealed class Startup: GameState
         StartupTask = Task.Run(() =>
         {
             Db.Database.Migrate();
+
+            if (Db.Settings.FirstOrDefault() == null)
+            {
+                Db.Settings.Add(new() { ZoomLevel = 3 });
+                Db.SaveChanges();
+            }
         });
     }
     
@@ -32,6 +38,7 @@ public sealed class Startup: GameState
     {
         if (Graphics.FullyLoaded && StartupTask.IsCompleted)
         {
+            Graphics.SetZoom(Db.Settings.First().ZoomLevel);
             GSM.ChangeState<TitleMenu>();
         }
     }

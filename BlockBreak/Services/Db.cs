@@ -8,6 +8,7 @@ namespace BlockBreak.Services;
 public sealed class Db: DbContext
 {
     public DbSet<HighScoreEntry> HighScoreEntries => Set<HighScoreEntry>();
+    public DbSet<Settings> Settings => Set<Settings>();
 
     protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
     {

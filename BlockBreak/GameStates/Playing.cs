@@ -87,6 +87,9 @@ public sealed class Playing: GameState
             
             NormalizeBallSpeed();
         }
+
+        if (Keyboard.PressedKey(Keys.Escape))
+            GSM.ChangeState<PauseMenu, PauseMenuConfig>(new(this));
     }
 
     public override void ActiveUpdate(GameTime gameTime)
