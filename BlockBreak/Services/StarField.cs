@@ -6,7 +6,7 @@ using Microsoft.Xna.Framework;
 namespace BlockBreak.Services;
 
 [AutoRegister(Lifetime.PerDependency)]
-public class StarField
+public sealed class StarField
 {
     private const int InnerRadius = 20;
     private const int Speed = 10;

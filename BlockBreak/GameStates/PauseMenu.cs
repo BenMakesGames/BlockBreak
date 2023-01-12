@@ -48,7 +48,7 @@ public sealed class PauseMenu: GameState
                     break;
 
                 case 1:
-                    GSM.ChangeState<SettingsMenu, SettingsMenuConfig>(new(this));
+                    GSM.ChangeState<SettingsMenu, SettingsMenuConfig>(new SettingsMenuConfig(this));
                     break;
 
                 case 2:
@@ -60,7 +60,7 @@ public sealed class PauseMenu: GameState
 
     public override void AlwaysUpdate(GameTime gameTime)
     {
-        PreviousState.AlwaysUpdate((gameTime));
+        PreviousState.AlwaysUpdate(gameTime);
     }
 
     public override void AlwaysDraw(GameTime gameTime)

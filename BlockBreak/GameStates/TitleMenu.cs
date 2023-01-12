@@ -46,7 +46,7 @@ public sealed class TitleMenu: GameState
             {
                 case 0: GSM.ChangeState<Playing>(); break;
                 case 1: GSM.ChangeState<HighScoreTable>(); break;
-                case 2: GSM.ChangeState<SettingsMenu, SettingsMenuConfig>(new(this)); break;
+                case 2: GSM.ChangeState<SettingsMenu, SettingsMenuConfig>(new SettingsMenuConfig(this)); break;
                 case 3: GSM.Exit(); break;
             }
         }

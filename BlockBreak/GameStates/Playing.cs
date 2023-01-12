@@ -88,7 +88,7 @@ public sealed class Playing: GameState
         }
 
         if (Keyboard.PressedKey(Keys.Escape))
-            GSM.ChangeState<PauseMenu, PauseMenuConfig>(new(this));
+            GSM.ChangeState<PauseMenu, PauseMenuConfig>(new PauseMenuConfig(this));
     }
 
     public override void ActiveUpdate(GameTime gameTime)
@@ -143,7 +143,7 @@ public sealed class Playing: GameState
                     return;
                 }
                 else
-                    GSM.ChangeState<GameOver, GameOverConfig>(new(this, Score));
+                    GSM.ChangeState<GameOver, GameOverConfig>(new GameOverConfig(this, Score));
             }
 
             // if it hit the paddle, bounce
