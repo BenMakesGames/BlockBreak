@@ -2,7 +2,6 @@ using BenMakesGames.MonoGame.Palettes;
 using BenMakesGames.PlayPlayMini;
 using BenMakesGames.PlayPlayMini.GraphicsExtensions;
 using BenMakesGames.PlayPlayMini.Services;
-using BenMakesGames.RandomHelpers;
 using BlockBreak.Model;
 using BlockBreak.Services;
 using Microsoft.Xna.Framework;
@@ -201,6 +200,9 @@ public sealed class Playing: GameState
                         newY -= newY + Ball.Radius - blockY;
 
                     PlayBounce(newRow * 0.2f);
+
+                    if(LevelCompleted())
+                        return;
                 }
             }
         }
@@ -287,6 +289,9 @@ public sealed class Playing: GameState
                         newX -= newX + Ball.Radius - blockX;
                     
                     PlayBounce(0.2f * highestRow);
+
+                    if(LevelCompleted())
+                        return;
                 }
             }
         }
@@ -367,5 +372,31 @@ public sealed class Playing: GameState
     public void PlayBounce(float pitch)
     {
         Sounds.PlaySound("Bounce", pitch: pitch);        
+    }
+
+    private bool LevelCompleted()
+    {
+        if(AnyBlocksRemain())
+            return false;
+        
+        ResetBoard();
+        Lives++;
+        GameSpeed += GameSpeed / 10;
+
+        return true;
+    }
+
+    private bool AnyBlocksRemain()
+    {
+        for (int x = 0; x < BlockColumns; x++)
+        {
+            for (int y = 0; y < BlockRows; y++)
+            {
+                if (Blocks[x, y] != null)
+                    return true;
+            }
+        }
+
+        return false;
     }
 }
