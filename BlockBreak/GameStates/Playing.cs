@@ -22,7 +22,6 @@ public sealed class Playing: GameState
     private GraphicsManager Graphics { get; }
     private KeyboardManager Keyboard { get; }
     private GameStateManager GSM { get; }
-    private Random RNG { get; }
     private StarField StarField { get; }
     private SoundManager Sounds { get; }
 
@@ -32,12 +31,11 @@ public sealed class Playing: GameState
     private Paddle Paddle { get; } = new();
     private Block?[,] Blocks { get; } = new Block[BlockColumns, BlockRows];
 
-    public Playing(GraphicsManager graphics, GameStateManager gsm, KeyboardManager keyboard, Random rng, StarField starField, SoundManager sounds)
+    public Playing(GraphicsManager graphics, GameStateManager gsm, KeyboardManager keyboard, StarField starField, SoundManager sounds)
     {
         Graphics = graphics;
         GSM = gsm;
         Keyboard = keyboard;
-        RNG = rng;
         StarField = starField;
         Sounds = sounds;
 
@@ -67,7 +65,7 @@ public sealed class Playing: GameState
         Ball.State = BallState.StuckToPaddle;
     }
 
-    public override void ActiveInput(GameTime gameTime)
+    public override void Input(GameTime gameTime)
     {
         Paddle.SpeedX = 0;
 
@@ -81,7 +79,7 @@ public sealed class Playing: GameState
         {
             Ball.State = BallState.Moving;
 
-            Ball.SpeedX = (RNG.NextDouble() - 0.5) / 10;
+            Ball.SpeedX = (Random.Shared.NextDouble() - 0.5) / 10;
             Ball.SpeedY = -Ball.Speed;
             
             NormalizeBallSpeed();
@@ -91,7 +89,7 @@ public sealed class Playing: GameState
             GSM.ChangeState<PauseMenu, PauseMenuConfig>(new PauseMenuConfig(this));
     }
 
-    public override void ActiveUpdate(GameTime gameTime)
+    private void ActiveUpdate(GameTime gameTime)
     {
         // if the game is lagging this hard, bail (the player is probably dragging the screen around, or something)
         if (gameTime.ElapsedGameTime.TotalSeconds >= 0.1)
@@ -307,24 +305,30 @@ public sealed class Playing: GameState
         Ball.SpeedY = Ball.SpeedY / speed * Ball.Speed;
     }
 
-    public override void AlwaysUpdate(GameTime gameTime)
+    public override void Update(GameTime gameTime)
     {
         StarField.Update(gameTime);
+
+        if(GSM.CurrentState == this)
+            ActiveUpdate(gameTime);
     }
 
-    public override void ActiveDraw(GameTime gameTime)
+    private void ActiveDraw(GameTime gameTime)
     {
         if(Ball.State == BallState.StuckToPaddle)
             Graphics.DrawWavyText("Font", gameTime, "Press SPACE to launch...", DawnBringers16.LightGray);
     }
 
-    public override void AlwaysDraw(GameTime gameTime)
+    public override void Draw(GameTime gameTime)
     {
         DrawBackground();
         DrawScore();
         DrawBlocks();
         DrawPaddle();
         DrawBall();
+
+        if(GSM.CurrentState == this)
+            ActiveDraw(gameTime);
     }
 
     private void DrawBackground()

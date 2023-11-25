@@ -33,26 +33,18 @@ public sealed class HighScoreTable: GameState
         Top10 = Db.HighScoreEntries.OrderByDescending(h => h.Score).ToList();
     }
 
-    public override void ActiveInput(GameTime gameTime)
+    public override void Input(GameTime gameTime)
     {
         if(Keyboard.PressedAnyKey())
             GSM.ChangeState<TitleMenu>();
     }
 
-    public override void ActiveUpdate(GameTime gameTime)
-    {
-    }
-
-    public override void AlwaysUpdate(GameTime gameTime)
+    public override void Update(GameTime gameTime)
     {
         StarField.Update(gameTime);
     }
 
-    public override void ActiveDraw(GameTime gameTime)
-    {
-    }
-
-    public override void AlwaysDraw(GameTime gameTime)
+    public override void Draw(GameTime gameTime)
     {
         Graphics.Clear(DawnBringers16.Black);
         StarField.Draw();

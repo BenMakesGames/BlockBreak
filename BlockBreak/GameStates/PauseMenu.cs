@@ -35,7 +35,7 @@ public sealed class PauseMenu: GameState
         };
     }
 
-    public override void ActiveInput(GameTime gameTime)
+    public override void Input(GameTime gameTime)
     {
         Menu.ActiveInput(Keyboard);
 
@@ -58,14 +58,14 @@ public sealed class PauseMenu: GameState
         }
     }
 
-    public override void AlwaysUpdate(GameTime gameTime)
+    public override void Update(GameTime gameTime)
     {
-        PreviousState.AlwaysUpdate(gameTime);
+        PreviousState.Update(gameTime);
     }
 
-    public override void AlwaysDraw(GameTime gameTime)
+    public override void Draw(GameTime gameTime)
     {
-        PreviousState.AlwaysDraw(gameTime);
+        PreviousState.Draw(gameTime);
 
         Graphics.DrawMenu(Menu, gameTime, Graphics.Height / 2, "Font");
     }

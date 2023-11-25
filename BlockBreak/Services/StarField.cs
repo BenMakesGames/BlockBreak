@@ -12,7 +12,6 @@ public sealed class StarField
     private const int Speed = 10;
 
     private GraphicsManager Graphics { get; }
-    private Random RNG { get; }
 
     private Star[] Stars { get; }
 
@@ -22,20 +21,20 @@ public sealed class StarField
         DawnBringers16.Gray,
     };
 
-    public StarField(Random rng, GraphicsManager graphics)
+    public StarField(GraphicsManager graphics)
     {
-        RNG = rng;
         Graphics = graphics;
         Stars = new Star[100];
 
         for (int i = 0; i < 100; i++)
         {
-            double angle = RNG.NextDouble() * Math.PI * 2;
-            double distance = InnerRadius + RNG.NextDouble() * (Math.Min(Graphics.Width, Graphics.Height) / 2.0 - InnerRadius);
+            var angle = Random.Shared.NextDouble() * Math.PI * 2;
+            var distance = InnerRadius + Random.Shared.NextDouble() * (Math.Min(Graphics.Width, Graphics.Height) / 2.0 - InnerRadius);
+            
             Stars[i] = new()
             {
                 Angle = angle,
-                Speed = RNG.Next(3),
+                Speed = Random.Shared.Next(3),
                 X = Graphics.Width / 2.0 + Math.Cos(angle) * distance,
                 Y = Graphics.Height / 2.0 + Math.Sin(angle) * distance,
             };
@@ -55,7 +54,7 @@ public sealed class StarField
 
             if (star.X < 0 || star.X >= Graphics.Width || star.Y < 0 || star.Y >= Graphics.Height)
             {
-                star.Angle = RNG.NextDouble() * Math.PI * 2;
+                star.Angle = Random.Shared.NextDouble() * Math.PI * 2;
                 star.X = Graphics.Width / 2.0 + Math.Cos(star.Angle) * InnerRadius;
                 star.Y = Graphics.Height / 2.0 + Math.Sin(star.Angle) * InnerRadius;
             }

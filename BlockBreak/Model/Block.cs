@@ -12,6 +12,6 @@ public sealed record Block(int BlockType)
         2 => 300,
         3 => 200,
         4 => 100,
-        5 => 50,
+        _ => 50,
     };
 }

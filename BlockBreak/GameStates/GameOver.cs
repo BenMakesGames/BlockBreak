@@ -36,7 +36,7 @@ public sealed class GameOver: GameState
         NumberOfHigherScores = Db.HighScoreEntries.Count(h => h.Score >= Score);
     }
 
-    public override void ActiveInput(GameTime gameTime)
+    public override void Input(GameTime gameTime)
     {
         if (GotAHighScore)
         {
@@ -93,14 +93,14 @@ public sealed class GameOver: GameState
         }
     }
 
-    public override void AlwaysUpdate(GameTime gameTime)
+    public override void Update(GameTime gameTime)
     {
-        PreviousState.AlwaysUpdate(gameTime);
+        PreviousState.Update(gameTime);
     }
 
-    public override void AlwaysDraw(GameTime gameTime)
+    public override void Draw(GameTime gameTime)
     {
-        PreviousState.AlwaysDraw(gameTime);
+        PreviousState.Draw(gameTime);
 
         Graphics.DrawSprite(
             "BigWords",
@@ -114,14 +114,14 @@ public sealed class GameOver: GameState
 
         if (GotAHighScore)
         {
-            var text = "Congratulations! You got a high score!";
+            const string text = "Congratulations! You got a high score!";
             Graphics.DrawText("Font", Graphics.Width / 2 - text.Length * 3, Graphics.Height / 2 - 10, text, DawnBringers16.White);
 
             DrawNameInput(gameTime);
         }
         else
         {
-            var text = "Not enough for a high score; sorry!";
+            const string text = "Not enough for a high score; sorry!";
             Graphics.DrawText("Font", Graphics.Width / 2 - text.Length * 3, Graphics.Height / 2 - 10, text, DawnBringers16.White);
 
             Graphics.DrawWavyText("Font", Graphics.Height / 2 + 10, gameTime, "Press SPACE to continue...", DawnBringers16.LightGray);
@@ -142,7 +142,7 @@ public sealed class GameOver: GameState
                     0 => DawnBringers16.White,
                     1 => DawnBringers16.Orange,
                     2 => DawnBringers16.White,
-                    3 => DawnBringers16.Yellow,
+                    _ => DawnBringers16.Yellow,
                 };
 
                 Graphics.DrawText("Font", x + i * 12, y, Initials[i], color);

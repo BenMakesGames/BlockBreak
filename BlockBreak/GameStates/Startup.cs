@@ -7,7 +7,6 @@ using Microsoft.Xna.Framework;
 
 namespace BlockBreak.GameStates;
 
-// sealed classes execute faster than non-sealed, so always seal your game states!
 public sealed class Startup: GameState
 {
     private GraphicsManager Graphics { get; }
@@ -34,7 +33,7 @@ public sealed class Startup: GameState
         });
     }
     
-    public override void ActiveUpdate(GameTime gameTime)
+    public override void Update(GameTime gameTime)
     {
         if (Graphics.FullyLoaded && StartupTask.IsCompleted)
         {
@@ -43,7 +42,7 @@ public sealed class Startup: GameState
         }
     }
 
-    public override void AlwaysDraw(GameTime gameTime)
+    public override void Draw(GameTime gameTime)
     {
         Graphics.DrawWavyText("Font", gameTime, "Loading...");
     }

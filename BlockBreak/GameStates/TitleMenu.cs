@@ -36,7 +36,7 @@ public sealed class TitleMenu: GameState
         };
     }
 
-    public override void ActiveInput(GameTime gameTime)
+    public override void Input(GameTime gameTime)
     {
         Menu.ActiveInput(Keyboard);
 
@@ -52,12 +52,12 @@ public sealed class TitleMenu: GameState
         }
     }
 
-    public override void AlwaysUpdate(GameTime gameTime)
+    public override void Update(GameTime gameTime)
     {
         StarField.Update(gameTime);
     }
 
-    public override void AlwaysDraw(GameTime gameTime)
+    public override void Draw(GameTime gameTime)
     {
         Graphics.Clear(DawnBringers16.Black);
         StarField.Draw();

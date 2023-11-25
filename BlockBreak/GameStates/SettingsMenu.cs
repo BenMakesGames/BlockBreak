@@ -48,7 +48,7 @@ public sealed class SettingsMenu: GameState
         Menu.Cursor = Graphics.Zoom - 1;
     }
 
-    public override void ActiveInput(GameTime gameTime)
+    public override void Input(GameTime gameTime)
     {
         Menu.ActiveInput(Keyboard);
 
@@ -69,20 +69,13 @@ public sealed class SettingsMenu: GameState
         }
     }
 
-    public override void ActiveUpdate(GameTime gameTime)
+    public override void Update(GameTime gameTime)
     {
-        StarField.Update(gameTime);
+        if(GSM.CurrentState == this)
+            StarField.Update(gameTime);
     }
 
-    public override void AlwaysUpdate(GameTime gameTime)
-    {
-    }
-
-    public override void ActiveDraw(GameTime gameTime)
-    {
-    }
-
-    public override void AlwaysDraw(GameTime gameTime)
+    public override void Draw(GameTime gameTime)
     {
         Graphics.Clear(DawnBringers16.Black);
         StarField.Draw();
