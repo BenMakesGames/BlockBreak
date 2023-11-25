@@ -7,6 +7,8 @@ Block-break is a Breakout clone written in [MonoGame](https://www.monogame.net/)
 * SQLite & [EntityFramework 8](https://learn.microsoft.com/en-us/aspnet/entity-framework) for storing the high score table and settings
 * [Serilog](https://serilog.net/) for logging errors to a text file
 
+![a screenshot of Block-break](docs/screenshot.png)
+
 ### A Caveat
 
 This project was put together in only a couple evenings, and the game physics are pretty roughly-implemented (there are some known collision bugs, and the code itself is just pretty ugly).
