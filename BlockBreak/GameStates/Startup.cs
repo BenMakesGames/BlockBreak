@@ -10,14 +10,16 @@ namespace BlockBreak.GameStates;
 public sealed class Startup: GameState
 {
     private GraphicsManager Graphics { get; }
+    private SoundManager Sounds { get; }
     private GameStateManager GSM { get; }
     private Db Db { get; }
 
     private Task StartupTask { get; }
 
-    public Startup(GraphicsManager graphics, GameStateManager gsm, Db db)
+    public Startup(GraphicsManager graphics, SoundManager sounds, GameStateManager gsm, Db db)
     {
         Graphics = graphics;
+        Sounds = sounds;
         GSM = gsm;
         Db = db;
 
@@ -35,7 +37,7 @@ public sealed class Startup: GameState
     
     public override void Update(GameTime gameTime)
     {
-        if (Graphics.FullyLoaded && StartupTask.IsCompleted)
+        if (Graphics.FullyLoaded && Sounds.FullyLoaded && StartupTask.IsCompleted)
         {
             Graphics.SetZoom(Db.Settings.First().ZoomLevel);
             GSM.ChangeState<TitleMenu>();

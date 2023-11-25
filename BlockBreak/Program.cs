@@ -30,7 +30,7 @@ gsmBuilder
         new SoundEffectMeta("Bounce", "Sounds/Bounce"),
     })
 
-    .AddServices(s => {
+    .AddServices((s, _) => {
         var serilogConfig = new LoggerConfiguration()
 #if DEBUG
             .MinimumLevel.Debug()
