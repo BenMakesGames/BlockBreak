@@ -38,7 +38,7 @@ gsmBuilder
 #else
             .MinimumLevel.Warning()
 #endif
-            .WriteTo.File($"{FileSystemHelpers.GameDataPath}{Path.DirectorySeparatorChar}Log.log", rollingInterval: RollingInterval.Day)
+            .WriteTo.File(Path.Combine(FileSystemHelpers.GameDataPath, "Log.log"), rollingInterval: RollingInterval.Day)
         ;
 
         s.RegisterSerilog(serilogConfig);
