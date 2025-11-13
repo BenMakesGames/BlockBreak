@@ -9,14 +9,14 @@ using Microsoft.Xna.Framework.Input;
 
 namespace BlockBreak.GameStates;
 
-public sealed class GameOver: GameState
+public sealed class GameOver: GameState<GameOverConfig>
 {
     private GraphicsManager Graphics { get; }
     private KeyboardManager Keyboard { get; }
     private GameStateManager GSM { get; }
     private Db Db { get; }
 
-    private GameState PreviousState { get; }
+    private AbstractGameState PreviousState { get; }
     private int Score { get; }
     private int NumberOfHigherScores { get; }
     private bool GotAHighScore => NumberOfHigherScores < 10;
@@ -158,4 +158,4 @@ public sealed class GameOver: GameState
     }
 }
 
-public sealed record GameOverConfig(GameState PreviousState, int Score);
+public sealed record GameOverConfig(AbstractGameState PreviousState, int Score);

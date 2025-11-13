@@ -8,7 +8,7 @@ using Microsoft.Xna.Framework.Input;
 
 namespace BlockBreak.GameStates;
 
-public sealed class SettingsMenu: GameState
+public sealed class SettingsMenu: GameState<SettingsMenuConfig>
 {
     private GraphicsManager Graphics { get; }
     private KeyboardManager Keyboard { get; }
@@ -16,7 +16,7 @@ public sealed class SettingsMenu: GameState
     private StarField StarField { get; }
     private Db Db { get; }
 
-    private GameState PreviousState { get; }
+    private AbstractGameState PreviousState { get; }
     private Menu Menu { get; }
 
     public SettingsMenu(
@@ -91,4 +91,4 @@ public sealed class SettingsMenu: GameState
     }
 }
 
-public sealed record SettingsMenuConfig(GameState PreviousState);
+public sealed record SettingsMenuConfig(AbstractGameState PreviousState);

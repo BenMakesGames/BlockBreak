@@ -7,13 +7,13 @@ using Microsoft.Xna.Framework.Input;
 
 namespace BlockBreak.GameStates;
 
-public sealed class PauseMenu: GameState
+public sealed class PauseMenu: GameState<PauseMenuConfig>
 {
     private GraphicsManager Graphics { get; }
     private KeyboardManager Keyboard { get; }
     private GameStateManager GSM { get; }
 
-    private GameState PreviousState { get; }
+    private AbstractGameState PreviousState { get; }
     private Menu Menu { get; }
 
     public PauseMenu(PauseMenuConfig config, GraphicsManager graphics, GameStateManager gsm, KeyboardManager keyboard)
@@ -71,4 +71,4 @@ public sealed class PauseMenu: GameState
     }
 }
 
-public sealed record PauseMenuConfig(GameState PreviousState);
+public sealed record PauseMenuConfig(AbstractGameState PreviousState);
